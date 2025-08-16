@@ -14,13 +14,13 @@ const FileUpload = () => {
         const file = el.files.item(0);
         if (file) {
           setSelectedFile(file);
-          const formData= new FormData()
-          formData.append('pdf' ,  file)
-          await fetch('http://localhost:8000/upload/pdf' , {
-            method: 'POST',
-            body: formData
-          })
-          console.log("File Uploaded")
+          const formData = new FormData();
+          formData.append("pdf", file);
+          await fetch("http://localhost:8000/upload/pdf", {
+            method: "POST",
+            body: formData,
+          });
+          console.log("File Uploaded");
         }
       }
     });
@@ -28,7 +28,7 @@ const FileUpload = () => {
   };
 
   return (
-    <div className="h-screen w-full flex flex-col items-center justify-center gap-8 bg-white border-r border-gray-200 p-6">
+    <div className=" w-full flex flex-col items-center justify-center gap-8 bg-white border-r border-gray-200 p-6">
       {/* Header */}
       <div className="flex flex-col items-center text-center gap-2">
         <div className="w-14 h-14 rounded-full bg-gray-900 flex items-center justify-center shadow-md">

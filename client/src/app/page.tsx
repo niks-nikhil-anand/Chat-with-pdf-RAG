@@ -4,7 +4,7 @@ import React from 'react'
 
 const page = () => {
   return (
-   <div className="grid grid-cols-[30%_70%] min-h-[60vh] bg-gray-100">
+   <div className="grid grid-cols-[30%_70%]  ">
   {/* Left Section - File Upload */}
   <div className="p-4 border-r border-gray-300 bg-white shadow-sm">
     <FileUpload />
