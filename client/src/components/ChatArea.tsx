@@ -92,7 +92,7 @@ const ChatArea: React.FC = () => {
   return (
     <div className="mx-auto p-2 space-y-6">
       {/* Chat Messags */}
-      <ScrollArea className="h-[60vh] border rounded-lg p-3 bg-gray-50">
+      <ScrollArea className="h-[80vh] border rounded-lg p-3 bg-gray-50">
         <div className="space-y-6 ">
           {/* Title & Description */}
           <div className="text-center space-y-2 bg-gray-200 py-5 rounded-xl">

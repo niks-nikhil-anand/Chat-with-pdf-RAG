@@ -28,7 +28,7 @@ const FileUpload = () => {
   };
 
   return (
-    <div className=" w-full flex flex-col items-center justify-center gap-8 bg-white border-r border-gray-200 p-6">
+    <div className=" w-full flex flex-col items-center justify-center gap-8  border-r border-gray-200  h-[80vh] border rounded-lg p-3 bg-gray-50">
       {/* Header */}
       <div className="flex flex-col items-center text-center gap-2">
         <div className="w-14 h-14 rounded-full bg-gray-900 flex items-center justify-center shadow-md">

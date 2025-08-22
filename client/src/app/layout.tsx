@@ -23,8 +23,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-   title: "Chat with PDF | RAG-Powered Assistant",
-  description: "Upload PDFs and ask questions with AI using Retrieval-Augmented Generation.",
+  title: "Chat with PDF | RAG-Powered Assistant",
+  description:
+    "Upload PDFs and ask questions with AI using Retrieval-Augmented Generation.",
 };
 
 export default function RootLayout({
@@ -33,7 +34,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up">
       <html lang="en">
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
@@ -41,13 +42,13 @@ export default function RootLayout({
           <header>
             <SignedOut>
               <section className="min-h-screen w-screen flex justify-center items-center">
-              <SignIn />
+                <SignIn />
               </section>
             </SignedOut>
             <SignedIn>
-              <Navbar/>
+              <Navbar />
               {children}
-              <Footer/>
+              <Footer />
             </SignedIn>
           </header>
         </body>
