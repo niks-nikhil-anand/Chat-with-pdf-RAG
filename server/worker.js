@@ -21,15 +21,7 @@ const worker = new Worker(
     console.log(`📦 Received job:`, job.data);
 
     try {
-      const jobData =
-        typeof job.data === "string" ? JSON.parse(job.data) : job.data;
-
-      // ✅ Validate path before using trim()
-      if (!jobData.path || typeof jobData.path !== "string") {
-        throw new Error("Invalid or missing file path in job data");
-      }
-
-      const cleanPath = path.resolve(jobData.path.trim());
+      
 
       if (!fs.existsSync(cleanPath)) {
         throw new Error(`File does not exist: ${cleanPath}`);
