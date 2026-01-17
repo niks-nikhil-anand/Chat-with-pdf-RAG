@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "sonner"; // Added import
 
 import {
   ClerkProvider,
   SignIn,
   SignedIn,
   SignedOut,
-  UserButton,
 } from "@clerk/nextjs";
 import Navbar from "@/components/shared/Navbar";
 import Footer from "@/components/shared/Footer";
@@ -48,9 +48,9 @@ export default function RootLayout({
             <SignedIn>
               <Navbar />
               {children}
-              <Footer />
             </SignedIn>
           </header>
+          <Toaster position="top-center" richColors />
         </body>
       </html>
     </ClerkProvider>
