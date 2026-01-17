@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Accordion,
   AccordionContent,
@@ -18,7 +19,11 @@ import {
   Bot,
   Sparkles,
   StopCircle,
+  Copy,
+  Check,
 } from "lucide-react";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -61,8 +66,8 @@ const ChatArea: React.FC = () => {
     if (!message.trim()) return;
 
     // Add user message
-    setMessages((prev) => [...prev, { role: "user", content: message }]);
-    const currentMessage = message;
+    const userMsg = message;
+    setMessages((prev) => [...prev, { role: "user", content: userMsg }]);
     setMessage("");
 
     try {
@@ -72,7 +77,7 @@ const ChatArea: React.FC = () => {
       setMessages((prev) => [...prev, { role: "assistant", content: "..." }]);
 
       const res = await axios.post<ApiResponse>("http://localhost:8000/chat", {
-        query: currentMessage,
+        query: userMsg,
       });
 
       const aiResponse =
@@ -95,6 +100,7 @@ const ChatArea: React.FC = () => {
       ]);
     } catch (error: any) {
       console.error(error);
+      toast.error("Failed to get response");
       setMessages((prev) => [
         ...prev.slice(0, -1),
         { role: "assistant", content: "❌ Error: " + error.message },
@@ -104,136 +110,177 @@ const ChatArea: React.FC = () => {
     }
   };
 
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success("Copied to clipboard");
+  };
+
   return (
-    <div className="flex flex-col h-[90vh] w-full max-w-5xl mx-auto border rounded-xl shadow-xl bg-white overflow-hidden mt-8">
+    <div className="flex flex-col h-[90vh] w-full max-w-5xl mx-auto border border-white/20 rounded-xl shadow-2xl bg-white/40 backdrop-blur-xl overflow-hidden mt-8 ring-1 ring-white/10 dark:bg-black/40">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 bg-slate-50 border-b">
+      <div className="flex items-center justify-between px-6 py-4 bg-white/50 dark:bg-black/50 border-b border-border/50 backdrop-blur-md sticky top-0 z-10">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-100 rounded-lg">
-            <FileText className="w-6 h-6 text-blue-600" />
+          <div className="p-2.5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg shadow-blue-500/20">
+            <Sparkles className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-slate-800">PDF Assistant</h1>
-            <p className="text-xs text-slate-500">
-              Ask questions from your documents
+            <h1 className="text-lg font-bold text-foreground">
+              PDF Assistant
+            </h1>
+            <p className="text-xs text-muted-foreground">
+              Powered by RAG
             </p>
           </div>
         </div>
       </div>
 
       {/* Chat Messages */}
-      <ScrollArea className="flex-1 p-4 bg-slate-50/50">
+      <ScrollArea className="flex-1 p-6 bg-transparent">
         {messages.length === 0 ? (
           // Empty State
-          <div className="flex flex-col items-center justify-center h-full text-center space-y-4 text-slate-400 mt-20">
-            <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mb-2">
-              <Sparkles className="w-8 h-8 text-blue-400" />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col items-center justify-center h-[50vh] text-center space-y-4 text-muted-foreground"
+          >
+            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-4 animate-pulse">
+              <FileText className="w-10 h-10 text-primary" />
             </div>
-            <h3 className="text-lg font-medium text-slate-600">
-              No messages yet
+            <h3 className="text-2xl font-semibold text-foreground">
+              Welcome Back!
             </h3>
-            <p className="max-w-sm text-sm">
+            <p className="max-w-sm text-base">
               Upload a PDF document and start asking questions to get instant
               answers with citations.
             </p>
-          </div>
+          </motion.div>
         ) : (
-          <div className="space-y-6 max-w-3xl mx-auto pb-4">
-            {messages.map((msg, i) => (
-              <div
-                key={i}
-                className={`flex gap-4 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"
-                  }`}
-              >
-                {/* Avatar */}
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 Shadow-sm ${msg.role === "user" ? "bg-blue-600" : "bg-emerald-600"
+          <div className="space-y-8 max-w-4xl mx-auto pb-4">
+            <AnimatePresence>
+              {messages.map((msg, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  layout
+                  className={`flex gap-4 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"
                     }`}
                 >
-                  {msg.role === "user" ? (
-                    <User className="w-5 h-5 text-white" />
-                  ) : (
-                    <Bot className="w-5 h-5 text-white" />
-                  )}
-                </div>
-
-                {/* Bubble */}
-                <div
-                  className={`flex flex-col max-w-[80%] ${msg.role === "user" ? "items-end" : "items-start"
-                    }`}
-                >
+                  {/* Avatar */}
                   <div
-                    className={`px-5 py-3 rounded-2xl text-sm leading-relaxed shadow-md ${msg.role === "user"
-                        ? "bg-blue-600 text-white rounded-br-none"
-                        : "bg-white border border-slate-200 text-slate-800 rounded-bl-none"
-                      }`}
+                    className={cn(
+                      "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg",
+                      msg.role === "user"
+                        ? "bg-gradient-to-br from-blue-600 to-blue-700 text-white"
+                        : "bg-white dark:bg-zinc-800 border border-border text-primary"
+                    )}
                   >
-                    {msg.role === "assistant" && msg.content === "..." ? (
-                      <div className="flex gap-1 items-center h-6 px-2">
-                        <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-                        <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-                        <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></span>
-                      </div>
+                    {msg.role === "user" ? (
+                      <User className="w-5 h-5" />
                     ) : (
-                      msg.content
+                      <Bot className="w-5 h-5" />
                     )}
                   </div>
 
-                  {/* Sources Accordion */}
-                  {msg.role === "assistant" &&
-                    msg.sources &&
-                    msg.sources.length > 0 && (
-                      <div className="mt-2 w-full max-w-md">
-                        <Accordion type="single" collapsible className="w-full">
-                          <AccordionItem
-                            value={`item-${i}`}
-                            className="border rounded-lg bg-white px-3 shadow-sm"
-                          >
-                            <AccordionTrigger className="py-2 text-xs text-slate-500 hover:text-blue-600 hover:no-underline">
-                              View {msg.sources.length} Sources
-                            </AccordionTrigger>
-                            <AccordionContent>
-                              <ul className="space-y-2 mt-2 pb-2">
-                                {msg.sources.map((src, idx) => (
-                                  <li
-                                    key={idx}
-                                    className="text-xs text-slate-600 bg-slate-50 p-2 rounded border border-slate-100"
-                                  >
-                                    {src}
-                                  </li>
-                                ))}
-                              </ul>
-                            </AccordionContent>
-                          </AccordionItem>
-                        </Accordion>
-                      </div>
-                    )}
-                </div>
-              </div>
-            ))}
+                  {/* Bubble */}
+                  <div
+                    className={`flex flex-col max-w-[85%] ${msg.role === "user" ? "items-end" : "items-start"
+                      }`}
+                  >
+                    <div
+                      className={cn(
+                        "px-6 py-4 rounded-2xl text-[15px] leading-relaxed shadow-sm relative group transition-all",
+                        msg.role === "user"
+                          ? "bg-blue-600 text-white rounded-tr-sm"
+                          : "bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border border-border/50 text-foreground rounded-tl-sm hover:shadow-md"
+                      )}
+                    >
+                      {msg.role === "assistant" && msg.content === "..." ? (
+                        <div className="flex gap-1.5 items-center h-6 px-2">
+                          <span className="w-2 h-2 bg-primary/50 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                          <span className="w-2 h-2 bg-primary/50 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                          <span className="w-2 h-2 bg-primary/50 rounded-full animate-bounce"></span>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="whitespace-pre-wrap">{msg.content}</div>
+                          {msg.role === "assistant" && (
+                            <button
+                              onClick={() => handleCopy(msg.content)}
+                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-black/5 dark:hover:bg-white/10 rounded-md"
+                            >
+                              <Copy className="w-3.5 h-3.5 text-muted-foreground" />
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </div>
+
+                    {/* Sources Accordion */}
+                    {msg.role === "assistant" &&
+                      msg.sources &&
+                      msg.sources.length > 0 && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          className="mt-3 w-full max-w-lg"
+                        >
+                          <Accordion type="single" collapsible className="w-full">
+                            <AccordionItem
+                              value={`item-${i}`}
+                              className="border border-border/60 rounded-xl bg-white/50 dark:bg-zinc-900/30 px-4 shadow-sm overflow-hidden"
+                            >
+                              <AccordionTrigger className="py-2.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors hover:no-underline">
+                                <div className="flex items-center gap-2">
+                                  <FileText className="w-3.5 h-3.5" />
+                                  <span>View {msg.sources.length} Sources</span>
+                                </div>
+                              </AccordionTrigger>
+                              <AccordionContent>
+                                <ul className="space-y-2 mt-1 pb-3">
+                                  {msg.sources.map((src, idx) => (
+                                    <li
+                                      key={idx}
+                                      className="text-xs text-muted-foreground bg-black/5 dark:bg-white/5 p-3 rounded-lg border border-border/50 leading-relaxed"
+                                    >
+                                      {src}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </AccordionContent>
+                            </AccordionItem>
+                          </Accordion>
+                        </motion.div>
+                      )}
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
             <div ref={scrollRef} />
           </div>
         )}
       </ScrollArea>
 
       {/* Input Area */}
-      <div className="p-4 bg-white border-t">
-        <div className="max-w-3xl mx-auto relative flex items-center gap-2">
+      <div className="p-6 bg-white/60 dark:bg-black/60 border-t border-border/50 backdrop-blur-md">
+        <div className="max-w-4xl mx-auto relative flex items-center gap-2">
           <Input
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
             placeholder="Ask something about your document..."
-            className="pr-14 py-6 rounded-full border-slate-200 focus-visible:ring-blue-500 shadow-sm text-base pl-6"
+            className="pr-16 py-7 rounded-full border-border/60 bg-white/50 dark:bg-zinc-900/50 focus-visible:ring-2 focus-visible:ring-ring shadow-sm text-base pl-8 backdrop-blur-sm transition-all hover:bg-white/80 dark:hover:bg-zinc-900/80"
           />
           <Button
             size="icon"
             onClick={handleSend}
             disabled={loading || !message.trim()}
-            className={`absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full transition-all shadow-sm ${message.trim()
-                ? "bg-blue-600 hover:bg-blue-700"
-                : "bg-slate-200 text-slate-400 cursor-not-allowed"
-              }`}
+            className={cn(
+              "absolute right-2 top-1/2 -translate-y-1/2 h-11 w-11 rounded-full transition-all shadow-md active:scale-95",
+              message.trim()
+                ? "bg-gradient-to-tr from-blue-600 to-indigo-600 hover:opacity-90 text-white"
+                : "bg-muted text-muted-foreground hover:bg-muted"
+            )}
           >
             {loading ? (
               <StopCircle className="w-5 h-5 animate-pulse" />
@@ -242,7 +289,7 @@ const ChatArea: React.FC = () => {
             )}
           </Button>
         </div>
-        <p className="text-center text-xs text-slate-400 mt-2">
+        <p className="text-center text-[11px] text-muted-foreground mt-3 font-medium opacity-70">
           AI can make mistakes. Please verify important information.
         </p>
       </div>
